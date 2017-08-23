@@ -123,6 +123,7 @@ Sub AddDataRow(tableName As String, values() As Variant, this_sheet As Worksheet
 
     Set sheet = this_sheet
     Set table = sheet.ListObjects.Item(tableName)
+    
 
     'First check if the last row is empty; if not, add a row
     If table.ListRows.Count > 0 Then
@@ -139,7 +140,7 @@ Sub AddDataRow(tableName As String, values() As Variant, this_sheet As Worksheet
 
     'Iterate through the last row and populate it with the entries from values()
     Set lastRow = table.ListRows(table.ListRows.Count).Range
-    For col = 1 To lastRow.Columns.Count
+    For col = 1 To lastRow.Columns.Count - 2
         If col <= UBound(values) + 1 Then lastRow.Cells(1, col) = values(col)
     Next col
     
