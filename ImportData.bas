@@ -40,7 +40,7 @@ For i = 0 To 7
     Set TargetWorkbook = Workbooks.Open(TargetPath)
     Iter = TargetWorksheet.ListObjects.Item(RegionNames(i)).Range.Rows.Count
         
-            'Check if table is already empty or if we've already added that date
+    'Check if table is already empty or we already added that date
     Set Result = TargetWorksheet.ListObjects.Item(RegionNames(i)).DataBodyRange
     If Result Is Nothing Then
         DontAdd = False
