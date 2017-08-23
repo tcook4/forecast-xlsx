@@ -1,110 +1,103 @@
 Attribute VB_Name = "ImportData"
 Sub Import_Data()
-'On Error GoTo ErrHandler
+'Imports Excel Spreadsheets and populates master forecast tables with data
+
+On Error GoTo ErrHandler
 
 'Disable screen updating
 Application.ScreenUpdating = False
 
-Dim Target_Workbook As Workbook
-Dim Target_Path As String
-Dim Empty_Row As Integer
-Dim target_data As String
-Dim iterator As Integer
-Dim deals As String
-Dim dont_add As Boolean: dont_add = False
-Dim Duplicate_Count As Integer: Duplicate_Count = 0
+Dim TargetWorkbook As Workbook              'New workbooks opened here for importing
+Dim TargetWorksheet As Worksheet            'Data is imported to this worksheet
+Dim WorksheetNames() As String              'Array of worksheet names to import
+Dim RegionNames() As String                 'Used to find correct table to import to
+Dim DataArray(1 To 12)                      'Filled and passed to create new row
+Dim Iter As Integer                         'Iterator
+Dim TargetPath As String                    'Filename we're trying to open
+Dim NotedDeals As String                    'Notable deals managers wish to call out by name
+Dim DontAdd As Boolean                      'Bool value to determine if we need to add the data
+Dim DuplicateCount As Integer               'How many duplicate / redundant records we skip
 
-Dim data_arr(1 To 12)
-Dim table_arr() As String
-table_arr = Split("Example,Central,East,West,Inside,EMEA,Renewal,Federal", ",")
-
-Dim target_worksheet As Worksheet
-Set target_worksheet = ThisWorkbook.Worksheets("Example History")
-
-Dim Forecast_Sheets() As String
-Forecast_Sheets = Split("C:\Weekly Forecast\Example.xlsx,C:\Weekly Forecast\Central.xlsx,C:\Weekly Forecast\East.xlsx,C:\Weekly Forecast\West.xlsx," & _
+'Initialization
+DuplicateCount = 0
+DontAdd = False
+Set TargetWorksheet = ThisWorkbook.Worksheets("Example History")
+RegionNames = Split("Example,Central,East,West,Inside,EMEA,Renewal,Federal", ",")
+WorksheetNames = Split("C:\Weekly Forecast\Example.xlsx,C:\Weekly Forecast\Central.xlsx,C:\Weekly Forecast\East.xlsx,C:\Weekly Forecast\West.xlsx," & _
 "C:\Weekly Forecast\Inside.xlsx,C:\Weekly Forecast\EMEA.xlsx,C:\Weekly Forecast\Renewal.xlsx,C:\Weekly Forecast\Federal.xlsx", ",")
 
 'make sure we have a directory to look in
 If Dir("C:\Weekly Forecast", vbDirectory) = "" Then
     MsgBox "Please ensure forecasts are in the directory 'C:\Weekly Forecast\'"
-    Exit Sub
+    GoTo ExitSub
 End If
-
-
-
 
 'For each sheet in sheets, import the data
 For i = 0 To 7
 
     'Assign the Workbook File Name along with its Path
-    Target_Path = Forecast_Sheets(i)
-
-    Set Target_Workbook = Workbooks.Open(Target_Path)
-
-    iterator = target_worksheet.ListObjects.Item(table_arr(i)).Range.Rows.Count
+    TargetPath = WorksheetNames(i)
+    Set TargetWorkbook = Workbooks.Open(TargetPath)
+    Iter = TargetWorksheet.ListObjects.Item(RegionNames(i)).Range.Rows.Count
         
-    'check if table is already empty or we already added that date
-    Set result = target_worksheet.ListObjects.Item(table_arr(i)).DataBodyRange
-    If result Is Nothing Then
-        dont_add = False
-    ElseIf Target_Workbook.Sheets(1).Cells(3, 1) = target_worksheet.ListObjects.Item(table_arr(i)).DataBodyRange(iterator - 1, 1) Then
-        dont_add = True
-        Duplicate_Count = Duplicate_Count + 1
+    'C if table is already empty or we already added that date
+    Set Result = TargetWorksheet.ListObjects.Item(RegionNames(i)).DataBodyRange
+    If Result Is Nothing Then
+        DontAdd = False
+    ElseIf TargetWorkbook.Sheets(1).Cells(3, 1) = TargetWorksheet.ListObjects.Item(RegionNames(i)).DataBodyRange(Iter - 1, 1) Then
+        DontAdd = True
+        DuplicateCount = DuplicateCount + 1
     Else
-        dont_add = False
+        DontAdd = False
     End If
 
-    If dont_add = False Then
-        'grab date
-        data_arr(1) = Target_Workbook.Sheets(1).Cells(3, 1)
+    'Get the data out of our import workbook
+    If DontAdd = False Then
+        'Date
+        DataArray(1) = TargetWorkbook.Sheets(1).Cells(3, 1)
         
-        'forecast numbers
-        data_arr(2) = Target_Workbook.Sheets(1).Cells(2, 4)
-        data_arr(3) = Target_Workbook.Sheets(1).Cells(3, 4)
-        data_arr(4) = Target_Workbook.Sheets(1).Cells(4, 4)
-        data_arr(5) = Target_Workbook.Sheets(1).Cells(2, 5)
-        data_arr(6) = Target_Workbook.Sheets(1).Cells(3, 5)
-        data_arr(7) = Target_Workbook.Sheets(1).Cells(4, 5)
-        data_arr(8) = Target_Workbook.Sheets(1).Cells(2, 6)
-        data_arr(9) = Target_Workbook.Sheets(1).Cells(3, 6)
-        data_arr(10) = Target_Workbook.Sheets(1).Cells(4, 6)
+        'Forecast numbers
+        DataArray(2) = TargetWorkbook.Sheets(1).Cells(2, 4)
+        DataArray(3) = TargetWorkbook.Sheets(1).Cells(3, 4)
+        DataArray(4) = TargetWorkbook.Sheets(1).Cells(4, 4)
+        DataArray(5) = TargetWorkbook.Sheets(1).Cells(2, 5)
+        DataArray(6) = TargetWorkbook.Sheets(1).Cells(3, 5)
+        DataArray(7) = TargetWorkbook.Sheets(1).Cells(4, 5)
+        DataArray(8) = TargetWorkbook.Sheets(1).Cells(2, 6)
+        DataArray(9) = TargetWorkbook.Sheets(1).Cells(3, 6)
+        DataArray(10) = TargetWorkbook.Sheets(1).Cells(4, 6)
         
         'Next Quarter
-        data_arr(11) = Target_Workbook.Sheets(1).Cells(6, 4)
+        DataArray(11) = TargetWorkbook.Sheets(1).Cells(6, 4)
         
         'Major Deals
-        iterator = 8
-        Do Until IsEmpty(Target_Workbook.Sheets(1).Cells(iterator, 4).Value)
-            If iterator = 8 Then
-                deals = Target_Workbook.Sheets(1).Cells(iterator, 4)
+        Iter = 8
+        Do Until IsEmpty(TargetWorkbook.Sheets(1).Cells(Iter, 4).Value)
+            If Iter = 8 Then
+                NotedDeals = TargetWorkbook.Sheets(1).Cells(Iter, 4)
             Else
-                deals = deals & ", " & Target_Workbook.Sheets(1).Cells(iterator, 4)
+                NotedDeals = NotedDeals & ", " & TargetWorkbook.Sheets(1).Cells(Iter, 4)
             End If
-            iterator = iterator + 1
+            Iter = Iter + 1
         Loop
-        data_arr(12) = deals
-        
-        Dim temp_str As String
-        temp_str = table_arr(i)
+        DataArray(12) = NotedDeals
         
         'Pass this to add data row to table
-        AddDataRow temp_str, data_arr, target_worksheet
+        AddDataRow RegionNames(i), DataArray, TargetWorksheet
     End If
     
     'Close workbook
-    Target_Workbook.Save
-    Target_Workbook.Close False
+    TargetWorkbook.Save
+    TargetWorkbook.Close False
     
 Next i
 
-'Enable screen updating
-Application.ScreenUpdating = True
-
 'Process Completed
-MsgBox "Import Complete" & vbCrLf & "Skipped " & Duplicate_Count & " duplicate records"
+MsgBox "Import Complete" & vbCrLf & "Skipped " & DuplicateCount & " duplicate records"
 
+'Exit and "error handling"
 ExitSub:
+    Application.ScreenUpdating = True
     Exit Sub
     
 ErrHandler:
@@ -114,17 +107,16 @@ ErrHandler:
 
 End Sub
 
-Sub AddDataRow(tableName As String, values() As Variant, this_sheet As Worksheet)
-    'add a new data row to a table
-    Dim sheet As Worksheet
+Sub AddDataRow(tableName As String, Values() As Variant, ThisSheet As Worksheet)
+    'A a new data row to a table
+    Dim sh As Worksheet
     Dim table As ListObject
     Dim col As Integer
     Dim lastRow As Range
-
-    Set sheet = this_sheet
-    Set table = sheet.ListObjects.Item(tableName)
     
-
+    Set sh = ThisSheet
+    Set table = sh.ListObjects.Item(tableName)
+    
     'First check if the last row is empty; if not, add a row
     If table.ListRows.Count > 0 Then
         Set lastRow = table.ListRows(table.ListRows.Count).Range
@@ -141,8 +133,32 @@ Sub AddDataRow(tableName As String, values() As Variant, this_sheet As Worksheet
     'Iterate through the last row and populate it with the entries from values()
     Set lastRow = table.ListRows(table.ListRows.Count).Range
     For col = 1 To lastRow.Columns.Count - 2
-        If col <= UBound(values) + 1 Then lastRow.Cells(1, col) = values(col)
+        If col <= UBound(Values) + 1 Then lastRow.Cells(1, col) = Values(col)
     Next col
     
+    'Add formulas for already won and remaining
+    'TODO - dynamic column names
+    lastRow.Cells(1, lastRow.Columns.Count - 1).Formula = "=[@[July Won]]+[@[August Won]]+[@[September Won]]"
+    lastRow.Cells(1, lastRow.Columns.Count).Formula = "=([@[July Most Likely]]+[@[July Upside]]+[@[August Most Likely]]+[@[August Upside]]+[@[September Most Likely]]+[@[September Upside]])-([@[July Won]]+[@[August Won]]+[@[September Won]])"
+    
 End Sub
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
