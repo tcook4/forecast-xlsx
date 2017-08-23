@@ -1,8 +1,9 @@
 Attribute VB_Name = "CreateTemplates"
 Sub Create_Forms()
-'Create template forms based on forecast spreadsheet for each regional manager
+'Create template forms based on forecast spreadsheet for each regional manager.
+'These templates can be imported with the ImportData module contained in this workbook
 
-On Error GoTo ErrHandler 'not sure this is the best way to do this
+On Error GoTo ErrHandler
 
 'We don't need to update the screen
 Application.ScreenUpdating = False
