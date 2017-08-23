@@ -1,7 +1,6 @@
 Attribute VB_Name = "SummarySubs"
 Sub UpdateTables()
  
- 
 Dim pt As PivotTable
 Dim Field As PivotField
 Dim NewCat As String
