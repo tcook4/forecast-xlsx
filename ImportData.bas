@@ -26,7 +26,7 @@ RegionNames = Split("Example,Central,East,West,Inside,EMEA,Renewal,Federal", ","
 WorksheetNames = Split("C:\Weekly Forecast\Example.xlsx,C:\Weekly Forecast\Central.xlsx,C:\Weekly Forecast\East.xlsx,C:\Weekly Forecast\West.xlsx," & _
 "C:\Weekly Forecast\Inside.xlsx,C:\Weekly Forecast\EMEA.xlsx,C:\Weekly Forecast\Renewal.xlsx,C:\Weekly Forecast\Federal.xlsx", ",")
 
-'make sure we have a directory to look in
+'Make sure we have a directory to look in
 If Dir("C:\Weekly Forecast", vbDirectory) = "" Then
     MsgBox "Please ensure forecasts are in the directory 'C:\Weekly Forecast\'"
     GoTo ExitSub
@@ -40,7 +40,7 @@ For i = 0 To 7
     Set TargetWorkbook = Workbooks.Open(TargetPath)
     Iter = TargetWorksheet.ListObjects.Item(RegionNames(i)).Range.Rows.Count
         
-    'C if table is already empty or we already added that date
+            'Check if table is already empty or if we've already added that date
     Set Result = TargetWorksheet.ListObjects.Item(RegionNames(i)).DataBodyRange
     If Result Is Nothing Then
         DontAdd = False
@@ -130,7 +130,7 @@ Sub AddDataRow(tableName As String, Values() As Variant, ThisSheet As Worksheet)
         table.ListRows.Add
     End If
 
-    'Iterate through the last row and populate it with the entries from values()
+    'Iterate through the rows and populate it with the entries from values()
     Set lastRow = table.ListRows(table.ListRows.Count).Range
     For col = 1 To lastRow.Columns.Count - 2
         If col <= UBound(Values) + 1 Then lastRow.Cells(1, col) = Values(col)
