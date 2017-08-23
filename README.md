@@ -1,2 +1,2 @@
 # forecast-xlsx
-excel projects for work
+Forecast spreadsheet modules for sales ops
